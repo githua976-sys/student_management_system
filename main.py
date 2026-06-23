@@ -6,6 +6,13 @@ from students import (
     update_student,
     delete_student
 )
+from course import (
+    add_course,
+    view_courses,
+    search_course,
+    update_course,
+    delete_course
+)
 
 def menu():
     while True:
