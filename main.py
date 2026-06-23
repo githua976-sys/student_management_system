@@ -1,4 +1,5 @@
 from database import create_database
+
 from students import (
     add_student,
     view_students,
@@ -6,6 +7,7 @@ from students import (
     update_student,
     delete_student
 )
+
 from course import (
     add_course,
     view_courses,
@@ -13,6 +15,7 @@ from course import (
     update_course,
     delete_course
 )
+
 
 def menu():
     while True:
@@ -24,58 +27,58 @@ def menu():
         print("5. Delete Student")
         print("6. Add Course")
         print("7. View Courses")
-        print("8. Update Course")
-        print("9. Delete Course")
-        print("10. Assign Student to Course")
-        print("11. View Students by Course")
-        print("12. Record Attendance")
-        print("13. View Attendance")
+        print("8. Search Course")
+        print("9. Update Course")
+        print("10. Delete Course")
+        print("11. Assign Student to Course")
+        print("12. View Students by Course")
+        print("13. Record Attendance")
         print("14. Generate Reports")
         print("15. Exit")
 
         choice = input("\nEnter your choice: ")
 
         if choice == "1":
-            print("Add Student Selected")
+            add_student()
 
         elif choice == "2":
-            print("View Students Selected")
+            view_students()
 
         elif choice == "3":
-            print("Search Student Selected")
+            search_student()
 
         elif choice == "4":
-            print("Update Student Selected")
+            update_student()
 
         elif choice == "5":
-            print("Delete Student Selected")
+            delete_student()
 
         elif choice == "6":
-            print("Add Course Selected")
+            add_course()
 
         elif choice == "7":
-            print("View Courses Selected")
+            view_courses()
 
         elif choice == "8":
-            print("Update Course Selected")
+            search_course()
 
         elif choice == "9":
-            print("Delete Course Selected")
+            update_course()
 
         elif choice == "10":
-            print("Assign Student To Course Selected")
+            delete_course()
 
         elif choice == "11":
-            print("View Students By Course Selected")
+            print("Assign Student to Course - Coming Soon")
 
         elif choice == "12":
-            print("Record Attendance Selected")
+            print("View Students by Course - Coming Soon")
 
         elif choice == "13":
-            print("View Attendance Selected")
+            print("Record Attendance - Coming Soon")
 
         elif choice == "14":
-            print("Generate Reports Selected")
+            print("Generate Reports - Coming Soon")
 
         elif choice == "15":
             print("Thank you for using Student Management System!")
@@ -84,8 +87,7 @@ def menu():
         else:
             print("Invalid choice. Please try again.")
 
-            # Create database and tables
-create_database()
 
-# Run menu
-menu()
+if __name__ == "__main__":
+    create_database()
+    menu()
