@@ -1,4 +1,11 @@
 from database import create_database
+from students import (
+    add_student,
+    view_students,
+    search_student,
+    update_student,
+    delete_student
+)
 
 def menu():
     while True:
