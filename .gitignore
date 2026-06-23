@@ -1,1 +1,28 @@
+# Virtual environment
 venv/
+env/
+.venv/
+
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment variables
+.env
+
+# IDE files (VS Code / PyCharm)
+.vscode/
+.idea/
+
+# Database files (important for your SQLite project)
+*.db
+*.sqlite3
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
