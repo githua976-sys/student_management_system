@@ -19,7 +19,7 @@ def create_database():
     CREATE TABLE IF NOT EXISTS courses (
         course_id INTEGER PRIMARY KEY AUTOINCREMENT,
         course_name TEXT NOT NULL,
-        description TEXT           
+        description TEXT
     )
     """)
 
@@ -27,3 +27,7 @@ def create_database():
     conn.close()
 
     print("Database created successfully!")
+
+
+if __name__ == "__main__":
+    create_database()
