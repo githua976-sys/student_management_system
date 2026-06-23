@@ -18,7 +18,7 @@ def create_database():
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS courses (
         course_id INTEGER PRIMARY KEY AUTOINCREMENT,
-        course_name TEXT NOT NULL
+        course_name TEXT NOT NULL,
         description TEXT           
     )
     """)
