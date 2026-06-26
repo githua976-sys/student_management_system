@@ -79,7 +79,7 @@ def menu():
 
         print("\n22. Exit")
 
-        choice = input("\nEnter your choice: ").strip()
+        choice = input("\nEnter your choice: ")
 
         # Student Management
         if choice == "1":
