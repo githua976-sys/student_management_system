@@ -1,5 +1,6 @@
 from database import create_database
 
+# Student Functions
 from students import (
     add_student,
     view_students,
@@ -8,6 +9,7 @@ from students import (
     delete_student
 )
 
+# Course Functions
 from course import (
     add_course,
     view_courses,
@@ -16,6 +18,7 @@ from course import (
     delete_course
 )
 
+# Enrollment Functions
 from enrollment import (
     assign_student_to_course,
     view_enrollments,
@@ -24,6 +27,7 @@ from enrollment import (
     remove_enrollment
 )
 
+# Attendance Functions
 from attendance import (
     record_attendance,
     view_attendance,
@@ -32,38 +36,52 @@ from attendance import (
     delete_attendance
 )
 
-from report import generate_reports
+# Report Functions
+from reports import generate_reports
+
 
 def menu():
     while True:
-        print("\n===== STUDENT MANAGEMENT SYSTEM =====")
+        print("\n========================================")
+        print("      STUDENT MANAGEMENT SYSTEM")
+        print("========================================")
+
+        print("\n--- STUDENT MANAGEMENT ---")
         print("1. Add Student")
         print("2. View Students")
         print("3. Search Student")
         print("4. Update Student")
         print("5. Delete Student")
+
+        print("\n--- COURSE MANAGEMENT ---")
         print("6. Add Course")
         print("7. View Courses")
         print("8. Search Course")
         print("9. Update Course")
         print("10. Delete Course")
+
+        print("\n--- ENROLLMENT MANAGEMENT ---")
         print("11. Assign Student to Course")
-        print("12. View Students by Course")
-        print("13. Record Attendance")
-        print("14. Generate Reports")
-        print("15. Record Attendance")
-        print("16. View Attendance")
-        print("17. Search Attendance")
-        print("18. Update Attendance")
-        print("19. Delete Attendance")
-        print("20. Generate Reports")
-        print("21. Exit")
-        
+        print("12. View All Enrollments")
+        print("13. View Students by Course")
+        print("14. View Courses by Student")
+        print("15. Remove Enrollment")
 
+        print("\n--- ATTENDANCE MANAGEMENT ---")
+        print("16. Record Attendance")
+        print("17. View Attendance")
+        print("18. Search Attendance")
+        print("19. Update Attendance")
+        print("20. Delete Attendance")
 
-        choice = input("\nEnter your choice: ")
+        print("\n--- REPORTS ---")
+        print("21. Generate Reports")
 
-          # Student Management
+        print("\n22. Exit")
+
+        choice = input("\nEnter your choice: ").strip()
+
+        # Student Management
         if choice == "1":
             add_student()
 
@@ -129,7 +147,7 @@ def menu():
 
         # Reports
         elif choice == "21":
-            print("\nReports Module Coming Soon...")
+            generate_reports()
 
         # Exit
         elif choice == "22":
