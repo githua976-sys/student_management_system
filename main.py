@@ -16,6 +16,14 @@ from course import (
     delete_course
 )
 
+from enrollment import (
+    assign_student_to_course,
+    view_enrollments,
+    view_students_by_course,
+    view_courses_by_student,
+    remove_enrollment
+)
+
 
 def menu():
     while True:
