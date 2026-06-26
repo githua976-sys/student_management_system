@@ -32,6 +32,7 @@ from attendance import (
     delete_attendance
 )
 
+from report import generate_reports
 
 def menu():
     while True:
