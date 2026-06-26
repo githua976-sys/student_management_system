@@ -24,6 +24,14 @@ from enrollment import (
     remove_enrollment
 )
 
+from attendance import (
+    record_attendance,
+    view_attendance,
+    search_attendance,
+    update_attendance,
+    delete_attendance
+)
+
 
 def menu():
     while True:
@@ -42,10 +50,19 @@ def menu():
         print("12. View Students by Course")
         print("13. Record Attendance")
         print("14. Generate Reports")
-        print("15. Exit")
+        print("15. Record Attendance")
+        print("16. View Attendance")
+        print("17. Search Attendance")
+        print("18. Update Attendance")
+        print("19. Delete Attendance")
+        print("20. Generate Reports")
+        print("21. Exit")
+        
+
 
         choice = input("\nEnter your choice: ")
 
+          # Student Management
         if choice == "1":
             add_student()
 
@@ -61,6 +78,7 @@ def menu():
         elif choice == "5":
             delete_student()
 
+        # Course Management
         elif choice == "6":
             add_course()
 
@@ -76,24 +94,49 @@ def menu():
         elif choice == "10":
             delete_course()
 
+        # Enrollment Management
         elif choice == "11":
-            print("Assign Student to Course - Coming Soon")
+            assign_student_to_course()
 
         elif choice == "12":
-            print("View Students by Course - Coming Soon")
+            view_enrollments()
 
         elif choice == "13":
-            print("Record Attendance - Coming Soon")
+            view_students_by_course()
 
         elif choice == "14":
-            print("Generate Reports - Coming Soon")
+            view_courses_by_student()
 
         elif choice == "15":
-            print("Thank you for using Student Management System!")
+            remove_enrollment()
+
+        # Attendance Management
+        elif choice == "16":
+            record_attendance()
+
+        elif choice == "17":
+            view_attendance()
+
+        elif choice == "18":
+            search_attendance()
+
+        elif choice == "19":
+            update_attendance()
+
+        elif choice == "20":
+            delete_attendance()
+
+        # Reports
+        elif choice == "21":
+            print("\nReports Module Coming Soon...")
+
+        # Exit
+        elif choice == "22":
+            print("\nThank you for using Student Management System!")
             break
 
         else:
-            print("Invalid choice. Please try again.")
+            print("\nInvalid choice. Please try again.")
 
 
 if __name__ == "__main__":
