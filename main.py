@@ -37,7 +37,7 @@ from attendance import (
 )
 
 # Report Functions
-from reports import generate_reports
+from report import generate_reports
 
 
 def menu():
