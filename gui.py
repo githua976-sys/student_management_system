@@ -38,7 +38,7 @@ from attendance import (
 )
 
 # Report Function
-from reports import generate_reports
+from report import generate_reports
 
 
 root = tk.Tk()
