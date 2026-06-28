@@ -1,44 +1,463 @@
+import sqlite3
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, scrolledtext, simpledialog
+from database import create_database
 
-# Student Functions
-from students import (
-    add_student,
-    view_students,
-    search_student,
-    update_student,
-    delete_student
-)
+DB_FILE = "students.db"
 
-# Course Functions
-from course import (
-    add_course,
-    view_courses,
-    search_course,
-    update_course,
-    delete_course
-)
 
-# Enrollment Functions
-from enrollment import (
-    assign_student_to_course,
-    view_enrollments,
-    view_students_by_course,
-    view_courses_by_student,
-    remove_enrollment
-)
+def execute_query(query, params=()):
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute(query, params)
+    conn.commit()
+    conn.close()
 
-# Attendance Functions
-from attendance import (
-    record_attendance,
-    view_attendance,
-    search_attendance,
-    update_attendance,
-    delete_attendance
-)
 
-# Report Function
-from report import generate_reports
+def fetch_all(query, params=()):
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute(query, params)
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
+
+
+def fetch_one(query, params=()):
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute(query, params)
+    row = cursor.fetchone()
+    conn.close()
+    return row
+
+
+def show_text_window(title, text_content):
+    window = tk.Toplevel(root)
+    window.title(title)
+    window.geometry("700x500")
+
+    text_area = scrolledtext.ScrolledText(window, width=90, height=30)
+    text_area.pack(fill="both", expand=True, padx=10, pady=10)
+    text_area.insert(tk.END, text_content)
+    text_area.configure(state="disabled")
+
+
+def add_student():
+    student_id = simpledialog.askstring("Add Student", "Student ID:", parent=root)
+    if not student_id:
+        return
+
+    name = simpledialog.askstring("Add Student", "Student Name:", parent=root)
+    if not name:
+        return
+
+    age = simpledialog.askinteger("Add Student", "Student Age:", parent=root)
+    if age is None:
+        return
+
+    email = simpledialog.askstring("Add Student", "Student Email:", parent=root)
+    if email is None:
+        return
+
+    phone = simpledialog.askstring("Add Student", "Student Phone:", parent=root)
+    if phone is None:
+        phone = ""
+
+    try:
+        execute_query(
+            "INSERT INTO students(student_id, name, age, email, phone) VALUES (?, ?, ?, ?, ?)",
+            (student_id, name, age, email, phone)
+        )
+        messagebox.showinfo("Success", "Student added successfully.", parent=root)
+    except sqlite3.IntegrityError:
+        messagebox.showerror("Error", "Student ID already exists or email is already used.", parent=root)
+
+
+def view_students():
+    rows = fetch_all("SELECT student_id, name, age, email, phone FROM students")
+    if not rows:
+        show_text_window("View Students", "No students found.")
+        return
+
+    text = "ID\tName\tAge\tEmail\tPhone\n"
+    text += "-" * 80 + "\n"
+    for row in rows:
+        text += f"{row[0]}\t{row[1]}\t{row[2]}\t{row[3]}\t{row[4]}\n"
+
+    show_text_window("View Students", text)
+
+
+def search_student():
+    student_id = simpledialog.askstring("Search Student", "Student ID:", parent=root)
+    if not student_id:
+        return
+
+    row = fetch_one("SELECT student_id, name, age, email, phone FROM students WHERE student_id = ?", (student_id,))
+    if row:
+        messagebox.showinfo("Student Found", f"ID: {row[0]}\nName: {row[1]}\nAge: {row[2]}\nEmail: {row[3]}\nPhone: {row[4]}", parent=root)
+    else:
+        messagebox.showinfo("Not Found", "No student found with that ID.", parent=root)
+
+
+def update_student():
+    student_id = simpledialog.askstring("Update Student", "Student ID:", parent=root)
+    if not student_id:
+        return
+
+    row = fetch_one("SELECT student_id, name, age, email, phone FROM students WHERE student_id = ?", (student_id,))
+    if not row:
+        messagebox.showerror("Error", "Student not found.", parent=root)
+        return
+
+    name = simpledialog.askstring("Update Student", "Student Name:", initialvalue=row[1], parent=root)
+    if not name:
+        return
+
+    age = simpledialog.askinteger("Update Student", "Student Age:", initialvalue=row[2], parent=root)
+    if age is None:
+        return
+
+    email = simpledialog.askstring("Update Student", "Student Email:", initialvalue=row[3], parent=root)
+    if email is None:
+        return
+
+    phone = simpledialog.askstring("Update Student", "Student Phone:", initialvalue=row[4], parent=root)
+    if phone is None:
+        phone = ""
+
+    execute_query(
+        "UPDATE students SET name = ?, age = ?, email = ?, phone = ? WHERE student_id = ?",
+        (name, age, email, phone, student_id)
+    )
+    messagebox.showinfo("Success", "Student updated successfully.", parent=root)
+
+
+def delete_student():
+    student_id = simpledialog.askstring("Delete Student", "Student ID:", parent=root)
+    if not student_id:
+        return
+
+    execute_query("DELETE FROM students WHERE student_id = ?", (student_id,))
+    messagebox.showinfo("Success", "Student deleted if it existed.", parent=root)
+
+
+def add_course():
+    course_name = simpledialog.askstring("Add Course", "Course Name:", parent=root)
+    if not course_name:
+        return
+
+    description = simpledialog.askstring("Add Course", "Description:", parent=root)
+    if description is None:
+        description = ""
+
+    duration = simpledialog.askstring("Add Course", "Duration:", parent=root)
+    if duration is None:
+        duration = ""
+
+    execute_query(
+        "INSERT INTO courses (course_name, description, duration) VALUES (?, ?, ?)",
+        (course_name, description, duration)
+    )
+    messagebox.showinfo("Success", "Course added successfully.", parent=root)
+
+
+def view_courses():
+    rows = fetch_all("SELECT course_id, course_name, description, duration FROM courses")
+    if not rows:
+        show_text_window("View Courses", "No courses found.")
+        return
+
+    text = "ID\tCourse Name\tDescription\tDuration\n"
+    text += "-" * 80 + "\n"
+    for row in rows:
+        text += f"{row[0]}\t{row[1]}\t{row[2]}\t{row[3]}\n"
+
+    show_text_window("View Courses", text)
+
+
+def search_course():
+    course_id = simpledialog.askinteger("Search Course", "Course ID:", parent=root)
+    if course_id is None:
+        return
+
+    row = fetch_one("SELECT course_id, course_name, description, duration FROM courses WHERE course_id = ?", (course_id,))
+    if row:
+        messagebox.showinfo("Course Found", f"ID: {row[0]}\nName: {row[1]}\nDescription: {row[2]}\nDuration: {row[3]}", parent=root)
+    else:
+        messagebox.showinfo("Not Found", "No course found with that ID.", parent=root)
+
+
+def update_course():
+    course_id = simpledialog.askinteger("Update Course", "Course ID:", parent=root)
+    if course_id is None:
+        return
+
+    row = fetch_one("SELECT course_name, description, duration FROM courses WHERE course_id = ?", (course_id,))
+    if not row:
+        messagebox.showerror("Error", "Course not found.", parent=root)
+        return
+
+    course_name = simpledialog.askstring("Update Course", "Course Name:", initialvalue=row[0], parent=root)
+    if not course_name:
+        return
+
+    description = simpledialog.askstring("Update Course", "Description:", initialvalue=row[1], parent=root)
+    if description is None:
+        description = ""
+
+    duration = simpledialog.askstring("Update Course", "Duration:", initialvalue=row[2], parent=root)
+    if duration is None:
+        duration = ""
+
+    execute_query(
+        "UPDATE courses SET course_name = ?, description = ?, duration = ? WHERE course_id = ?",
+        (course_name, description, duration, course_id)
+    )
+    messagebox.showinfo("Success", "Course updated successfully.", parent=root)
+
+
+def delete_course():
+    course_id = simpledialog.askinteger("Delete Course", "Course ID:", parent=root)
+    if course_id is None:
+        return
+
+    execute_query("DELETE FROM courses WHERE course_id = ?", (course_id,))
+    messagebox.showinfo("Success", "Course deleted if it existed.", parent=root)
+
+
+def assign_student_to_course():
+    student_id = simpledialog.askstring("Assign Enrollment", "Student ID:", parent=root)
+    if not student_id:
+        return
+
+    course_id = simpledialog.askinteger("Assign Enrollment", "Course ID:", parent=root)
+    if course_id is None:
+        return
+
+    enrollment_date = simpledialog.askstring("Assign Enrollment", "Enrollment Date (YYYY-MM-DD):", parent=root)
+    if enrollment_date is None:
+        return
+
+    execute_query(
+        "INSERT INTO enrollments (student_id, course_id, enrollment_date) VALUES (?, ?, ?)",
+        (student_id, course_id, enrollment_date)
+    )
+    messagebox.showinfo("Success", "Enrollment added successfully.", parent=root)
+
+
+def view_enrollments():
+    rows = fetch_all(
+        "SELECT enrollments.enrollment_id, students.student_id, students.name, courses.course_name, enrollments.enrollment_date "
+        "FROM enrollments "
+        "JOIN students ON enrollments.student_id = students.student_id "
+        "JOIN courses ON enrollments.course_id = courses.course_id"
+    )
+    if not rows:
+        show_text_window("View Enrollments", "No enrollments found.")
+        return
+
+    text = "Enroll ID\tStudent ID\tName\tCourse\tDate\n"
+    text += "-" * 100 + "\n"
+    for row in rows:
+        text += f"{row[0]}\t{row[1]}\t{row[2]}\t{row[3]}\t{row[4]}\n"
+
+    show_text_window("View Enrollments", text)
+
+
+def view_students_by_course():
+    course_id = simpledialog.askinteger("Students by Course", "Course ID:", parent=root)
+    if course_id is None:
+        return
+
+    rows = fetch_all(
+        "SELECT students.student_id, students.name, courses.course_name "
+        "FROM enrollments "
+        "JOIN students ON enrollments.student_id = students.student_id "
+        "JOIN courses ON enrollments.course_id = courses.course_id "
+        "WHERE courses.course_id = ?",
+        (course_id,)
+    )
+    if not rows:
+        show_text_window("Students by Course", "No students found for that course.")
+        return
+
+    text = "Student ID\tName\tCourse\n"
+    text += "-" * 80 + "\n"
+    for row in rows:
+        text += f"{row[0]}\t{row[1]}\t{row[2]}\n"
+
+    show_text_window("Students by Course", text)
+
+
+def view_courses_by_student():
+    student_id = simpledialog.askstring("Courses by Student", "Student ID:", parent=root)
+    if not student_id:
+        return
+
+    rows = fetch_all(
+        "SELECT students.name, courses.course_name "
+        "FROM enrollments "
+        "JOIN students ON enrollments.student_id = students.student_id "
+        "JOIN courses ON enrollments.course_id = courses.course_id "
+        "WHERE students.student_id = ?",
+        (student_id,)
+    )
+    if not rows:
+        show_text_window("Courses by Student", "No courses found for that student.")
+        return
+
+    text = "Student Name\tCourse\n"
+    text += "-" * 80 + "\n"
+    for row in rows:
+        text += f"{row[0]}\t{row[1]}\n"
+
+    show_text_window("Courses by Student", text)
+
+
+def remove_enrollment():
+    enrollment_id = simpledialog.askinteger("Remove Enrollment", "Enrollment ID:", parent=root)
+    if enrollment_id is None:
+        return
+
+    execute_query("DELETE FROM enrollments WHERE enrollment_id = ?", (enrollment_id,))
+    messagebox.showinfo("Success", "Enrollment removed if it existed.", parent=root)
+
+
+def record_attendance():
+    student_id = simpledialog.askstring("Record Attendance", "Student ID:", parent=root)
+    if not student_id:
+        return
+
+    course_id = simpledialog.askinteger("Record Attendance", "Course ID:", parent=root)
+    if course_id is None:
+        return
+
+    attendance_date = simpledialog.askstring("Record Attendance", "Attendance Date (YYYY-MM-DD):", parent=root)
+    if attendance_date is None:
+        return
+
+    status = simpledialog.askstring("Record Attendance", "Status (Present/Absent):", parent=root)
+    if status is None:
+        return
+    status = status.title()
+    if status not in ("Present", "Absent"):
+        messagebox.showerror("Error", "Status must be Present or Absent.", parent=root)
+        return
+
+    execute_query(
+        "INSERT INTO attendance (student_id, course_id, attendance_date, status) VALUES (?, ?, ?, ?)",
+        (student_id, course_id, attendance_date, status)
+    )
+    messagebox.showinfo("Success", "Attendance recorded successfully.", parent=root)
+
+
+def view_attendance():
+    rows = fetch_all(
+        "SELECT attendance.attendance_id, students.student_id, students.name, courses.course_name, attendance.attendance_date, attendance.status "
+        "FROM attendance "
+        "JOIN students ON attendance.student_id = students.student_id "
+        "JOIN courses ON attendance.course_id = courses.course_id"
+    )
+    if not rows:
+        show_text_window("View Attendance", "No attendance records found.")
+        return
+
+    text = "Attend ID\tStudent ID\tName\tCourse\tDate\tStatus\n"
+    text += "-" * 120 + "\n"
+    for row in rows:
+        text += f"{row[0]}\t{row[1]}\t{row[2]}\t{row[3]}\t{row[4]}\t{row[5]}\n"
+
+    show_text_window("View Attendance", text)
+
+
+def search_attendance():
+    student_id = simpledialog.askstring("Search Attendance", "Student ID:", parent=root)
+    if not student_id:
+        return
+
+    rows = fetch_all(
+        "SELECT attendance.attendance_id, students.name, courses.course_name, attendance.attendance_date, attendance.status "
+        "FROM attendance "
+        "JOIN students ON attendance.student_id = students.student_id "
+        "JOIN courses ON attendance.course_id = courses.course_id "
+        "WHERE attendance.student_id = ?",
+        (student_id,)
+    )
+    if not rows:
+        show_text_window("Search Attendance", "No attendance records found for that student.")
+        return
+
+    text = "Attend ID\tName\tCourse\tDate\tStatus\n"
+    text += "-" * 120 + "\n"
+    for row in rows:
+        text += f"{row[0]}\t{row[1]}\t{row[2]}\t{row[3]}\t{row[4]}\n"
+
+    show_text_window("Search Attendance", text)
+
+
+def update_attendance():
+    attendance_id = simpledialog.askinteger("Update Attendance", "Attendance ID:", parent=root)
+    if attendance_id is None:
+        return
+
+    status = simpledialog.askstring("Update Attendance", "New Status (Present/Absent):", parent=root)
+    if status is None:
+        return
+    status = status.title()
+    if status not in ("Present", "Absent"):
+        messagebox.showerror("Error", "Status must be Present or Absent.", parent=root)
+        return
+
+    execute_query("UPDATE attendance SET status = ? WHERE attendance_id = ?", (status, attendance_id))
+    messagebox.showinfo("Success", "Attendance updated successfully.", parent=root)
+
+
+def delete_attendance():
+    attendance_id = simpledialog.askinteger("Delete Attendance", "Attendance ID:", parent=root)
+    if attendance_id is None:
+        return
+
+    execute_query("DELETE FROM attendance WHERE attendance_id = ?", (attendance_id,))
+    messagebox.showinfo("Success", "Attendance deleted if it existed.", parent=root)
+
+
+def generate_reports():
+    total_students = fetch_one("SELECT COUNT(*) FROM students")[0]
+    total_courses = fetch_one("SELECT COUNT(*) FROM courses")[0]
+    total_enrollments = fetch_one("SELECT COUNT(*) FROM enrollments")[0]
+
+    students_per_course = fetch_all(
+        "SELECT courses.course_name, COUNT(enrollments.student_id) "
+        "FROM courses "
+        "LEFT JOIN enrollments ON courses.course_id = enrollments.course_id "
+        "GROUP BY courses.course_name"
+    )
+
+    attendance_records = fetch_all(
+        "SELECT students.name, courses.course_name, attendance.attendance_date, attendance.status "
+        "FROM attendance "
+        "JOIN students ON attendance.student_id = students.student_id "
+        "JOIN courses ON attendance.course_id = courses.course_id"
+    )
+
+    text = f"Total Students: {total_students}\n"
+    text += f"Total Courses: {total_courses}\n"
+    text += f"Total Enrollments: {total_enrollments}\n\n"
+    text += "Students per Course:\n"
+    for row in students_per_course:
+        text += f"{row[0]}: {row[1]}\n"
+    text += "\nAttendance Records:\n"
+    if attendance_records:
+        for row in attendance_records:
+            text += f"{row[0]} - {row[1]} - {row[2]} - {row[3]}\n"
+    else:
+        text += "No attendance records found.\n"
+
+    show_text_window("Reports", text)
+
+
+create_database()
 
 
 root = tk.Tk()
