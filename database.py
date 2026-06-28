@@ -57,5 +57,31 @@ def create_database():
     print("Database and tables created successfully!")
 
 
+def ensure_column(table, column, col_def):
+    conn = sqlite3.connect("students.db")
+    cur = conn.cursor()
+    cur.execute(f"PRAGMA table_info({table})")
+    cols = [row[1] for row in cur.fetchall()]
+    if column not in cols:
+        cur.execute(f"ALTER TABLE {table} ADD COLUMN {column} {col_def}")
+        print(f"Added column {column} to {table}")
+    conn.commit()
+    conn.close()
+
+
+def migrate_add_columns():
+    # ensure students.phone exists
+    ensure_column('students', 'phone', 'TEXT')
+    # add courses.adoration if missing (user requested 'adoration')
+    ensure_column('courses', 'adoration', 'TEXT')
+    # ensure courses.duration exists
+    ensure_column('courses', 'duration', 'TEXT')
+
+
+if __name__ == "__main__":
+    create_database()
+    migrate_add_columns()
+
+
 if __name__ == "__main__":
     create_database()
