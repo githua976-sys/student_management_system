@@ -36,6 +36,10 @@ def show_text_window(title, text_content):
     window = tk.Toplevel(root)
     window.title(title)
     window.geometry("700x500")
+    window.transient(root)
+    window.lift()
+    window.attributes("-topmost", True)
+    window.after(100, lambda: window.attributes("-topmost", False))
 
     text_area = scrolledtext.ScrolledText(window, width=90, height=30)
     text_area.pack(fill="both", expand=True, padx=10, pady=10)
