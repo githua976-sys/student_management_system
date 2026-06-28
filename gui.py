@@ -539,29 +539,31 @@ tk.Button(root, text="Delete Course", width=30, command=safe_call(delete_course)
 
 tk.Label(root, text="Enrollment", font=("Arial", 14, "bold")).pack(pady=10)
 
-tk.Button(root, text="Assign Student to Course", width=30, command=assign_student_to_course).pack(pady=2)
-tk.Button(root, text="View Enrollments", width=30, command=view_enrollments).pack(pady=2)
-tk.Button(root, text="View Students by Course", width=30, command=view_students_by_course).pack(pady=2)
-tk.Button(root, text="View Courses by Student", width=30, command=view_courses_by_student).pack(pady=2)
-tk.Button(root, text="Remove Enrollment", width=30, command=remove_enrollment).pack(pady=2)
+# enrollment buttons
+tk.Button(root, text="Assign Student to Course", width=30, command=safe_call(assign_student_to_course)).pack(pady=2)
+tk.Button(root, text="View Enrollments", width=30, command=safe_call(view_enrollments)).pack(pady=2)
+tk.Button(root, text="View Students by Course", width=30, command=safe_call(view_students_by_course)).pack(pady=2)
+tk.Button(root, text="View Courses by Student", width=30, command=safe_call(view_courses_by_student)).pack(pady=2)
+tk.Button(root, text="Remove Enrollment", width=30, command=safe_call(remove_enrollment)).pack(pady=2)
 
 
 # ---------------- Attendance ----------------
 
 tk.Label(root, text="Attendance", font=("Arial", 14, "bold")).pack(pady=10)
 
-tk.Button(root, text="Record Attendance", width=30, command=record_attendance).pack(pady=2)
-tk.Button(root, text="View Attendance", width=30, command=view_attendance).pack(pady=2)
-tk.Button(root, text="Search Attendance", width=30, command=search_attendance).pack(pady=2)
-tk.Button(root, text="Update Attendance", width=30, command=update_attendance).pack(pady=2)
-tk.Button(root, text="Delete Attendance", width=30, command=delete_attendance).pack(pady=2)
+# attendance buttons
+tk.Button(root, text="Record Attendance", width=30, command=safe_call(record_attendance)).pack(pady=2)
+tk.Button(root, text="View Attendance", width=30, command=safe_call(view_attendance)).pack(pady=2)
+tk.Button(root, text="Search Attendance", width=30, command=safe_call(search_attendance)).pack(pady=2)
+tk.Button(root, text="Update Attendance", width=30, command=safe_call(update_attendance)).pack(pady=2)
+tk.Button(root, text="Delete Attendance", width=30, command=safe_call(delete_attendance)).pack(pady=2)
 
 
 # ---------------- Reports ----------------
 
 tk.Label(root, text="Reports", font=("Arial", 14, "bold")).pack(pady=10)
 
-tk.Button(root, text="Generate Reports", width=30, command=generate_reports).pack(pady=2)
+tk.Button(root, text="Generate Reports", width=30, command=safe_call(generate_reports)).pack(pady=2)
 
 
 tk.Button(
