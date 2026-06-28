@@ -7,29 +7,51 @@ DB_FILE = "students.db"
 
 
 def execute_query(query, params=()):
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
-    cursor.execute(query, params)
-    conn.commit()
-    conn.close()
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute(query, params)
+        conn.commit()
+        conn.close()
+        return True
+    except sqlite3.Error as e:
+        if 'root' in globals():
+            messagebox.showerror("Database Error", str(e), parent=root)
+        else:
+            print("Database Error:", e)
+        return False
 
 
 def fetch_all(query, params=()):
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
-    cursor.execute(query, params)
-    rows = cursor.fetchall()
-    conn.close()
-    return rows
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute(query, params)
+        rows = cursor.fetchall()
+        conn.close()
+        return rows
+    except sqlite3.Error as e:
+        if 'root' in globals():
+            messagebox.showerror("Database Error", str(e), parent=root)
+        else:
+            print("Database Error:", e)
+        return []
 
 
 def fetch_one(query, params=()):
-    conn = sqlite3.connect(DB_FILE)
-    cursor = conn.cursor()
-    cursor.execute(query, params)
-    row = cursor.fetchone()
-    conn.close()
-    return row
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute(query, params)
+        row = cursor.fetchone()
+        conn.close()
+        return row
+    except sqlite3.Error as e:
+        if 'root' in globals():
+            messagebox.showerror("Database Error", str(e), parent=root)
+        else:
+            print("Database Error:", e)
+        return None
 
 
 def show_text_window(title, text_content):
@@ -491,24 +513,26 @@ title.pack(pady=20)
 
 tk.Label(root, text="Student Management", font=("Arial", 14, "bold")).pack()
 
-tk.Button(root, text="Add Student", width=30, command=add_student).pack(pady=2)
-tk.Button(root, text="View Students", width=30, command=view_students).pack(pady=2)
-tk.Button(root, text="Search Student", width=30, command=search_student).pack(pady=2)
-tk.Button(root, text="Update Student", width=30, command=update_student).pack(pady=2)
-tk.Button(root, text="Delete Student", width=30, command=delete_student).pack(pady=2)
+# student buttons
+tk.Button(root, text="Add Student", width=30, command=safe_call(add_student)).pack(pady=2)
+tk.Button(root, text="View Students", width=30, command=safe_call(view_students)).pack(pady=2)
+tk.Button(root, text="Search Student", width=30, command=safe_call(search_student)).pack(pady=2)
+tk.Button(root, text="Update Student", width=30, command=safe_call(update_student)).pack(pady=2)
+tk.Button(root, text="Delete Student", width=30, command=safe_call(delete_student)).pack(pady=2)
 # wrap callbacks with safe_call to show errors
-tk.Button(root, text="Add Student", width=30, command=safe_call(add_student)).pack_forget()
+# temporary duplicate removed
 
 
 # ---------------- Courses ----------------
 
 tk.Label(root, text="Course Management", font=("Arial", 14, "bold")).pack(pady=10)
 
-tk.Button(root, text="Add Course", width=30, command=add_course).pack(pady=2)
-tk.Button(root, text="View Courses", width=30, command=view_courses).pack(pady=2)
-tk.Button(root, text="Search Course", width=30, command=search_course).pack(pady=2)
-tk.Button(root, text="Update Course", width=30, command=update_course).pack(pady=2)
-tk.Button(root, text="Delete Course", width=30, command=delete_course).pack(pady=2)
+# course buttons
+tk.Button(root, text="Add Course", width=30, command=safe_call(add_course)).pack(pady=2)
+tk.Button(root, text="View Courses", width=30, command=safe_call(view_courses)).pack(pady=2)
+tk.Button(root, text="Search Course", width=30, command=safe_call(search_course)).pack(pady=2)
+tk.Button(root, text="Update Course", width=30, command=safe_call(update_course)).pack(pady=2)
+tk.Button(root, text="Delete Course", width=30, command=safe_call(delete_course)).pack(pady=2)
 
 
 # ---------------- Enrollment ----------------
