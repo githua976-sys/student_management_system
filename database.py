@@ -5,7 +5,6 @@ def create_database():
     conn = sqlite3.connect("students.db")
     cursor = conn.cursor()
 
-    # Students Table
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS students (
         student_id TEXT PRIMARY KEY,
@@ -16,17 +15,16 @@ def create_database():
     )
     """)
 
-    # Courses Table
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS courses (
         course_id INTEGER PRIMARY KEY AUTOINCREMENT,
         course_name TEXT NOT NULL,
         description TEXT,
-        duration TEXT
+        duration TEXT,
+        adoration TEXT
     )
     """)
 
-    # Enrollments Table
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS enrollments (
         enrollment_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -38,7 +36,6 @@ def create_database():
     )
     """)
 
-    # Attendance Table
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS attendance (
         attendance_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -70,18 +67,11 @@ def ensure_column(table, column, col_def):
 
 
 def migrate_add_columns():
-    # ensure students.phone exists
-    ensure_column('students', 'phone', 'TEXT')
-    # add courses.adoration if missing (user requested 'adoration')
-    ensure_column('courses', 'adoration', 'TEXT')
-    # ensure courses.duration exists
-    ensure_column('courses', 'duration', 'TEXT')
+    ensure_column("students", "phone", "TEXT")
+    ensure_column("courses", "adoration", "TEXT")
+    ensure_column("courses", "duration", "TEXT")
 
 
 if __name__ == "__main__":
     create_database()
     migrate_add_columns()
-
-
-if __name__ == "__main__":
-    create_database()
