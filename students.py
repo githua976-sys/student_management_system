@@ -1,29 +1,23 @@
 import sqlite3
 
-
-# Add Student
-def add_student():
+def add_student(student_id, name, age, email):
     conn = sqlite3.connect("students.db")
     cursor = conn.cursor()
 
-    student_id = input("Enter Student ID: ")
-    name = input("Enter Name: ")
-    age = int(input("Enter Age: "))
-    email = input("Enter Email: ")
-
     try:
         cursor.execute("""
-        INSERT INTO students (student_id, name, age, email)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO students(student_id, name, age, email)
+        VALUES(?,?,?,?)
         """, (student_id, name, age, email))
 
         conn.commit()
-        print("Student added successfully!")
+        return True
 
     except sqlite3.IntegrityError:
-        print("Student ID already exists!")
+        return False
 
-    conn.close()
+    finally:
+        conn.close()
 
 
 # View Students
@@ -43,38 +37,26 @@ def view_students():
 
 
 # Search Student
-def search_student():
+def search_student(student_id):
     conn = sqlite3.connect("students.db")
     cursor = conn.cursor()
 
-    student_id = input("Enter Student ID: ")
-
     cursor.execute(
-        "SELECT * FROM students WHERE student_id = ?",
+        "SELECT * FROM students WHERE student_id=?",
         (student_id,)
     )
 
     student = cursor.fetchone()
 
-    if student:
-        print("\nStudent Found:")
-        print(student)
-    else:
-        print("Student not found!")
-
     conn.close()
+
+    return student
 
 
 # Update Student
-def update_student():
+def update_student(student_id, name, age, email):
     conn = sqlite3.connect("students.db")
     cursor = conn.cursor()
-
-    student_id = input("Enter Student ID: ")
-
-    name = input("Enter New Name: ")
-    age = int(input("Enter New Age: "))
-    email = input("Enter New Email: ")
 
     cursor.execute("""
     UPDATE students
@@ -84,20 +66,16 @@ def update_student():
 
     conn.commit()
 
-    if cursor.rowcount > 0:
-        print("Student updated successfully!")
-    else:
-        print("Student not found!")
+    updated = cursor.rowcount
 
     conn.close()
 
+    return updated > 0
 
 # Delete Student
-def delete_student():
+def delete_student(student_id):
     conn = sqlite3.connect("students.db")
     cursor = conn.cursor()
-
-    student_id = input("Enter Student ID: ")
 
     cursor.execute(
         "DELETE FROM students WHERE student_id=?",
@@ -106,9 +84,8 @@ def delete_student():
 
     conn.commit()
 
-    if cursor.rowcount > 0:
-        print("Student deleted successfully!")
-    else:
-        print("Student not found!")
+    deleted = cursor.rowcount
 
     conn.close()
+
+    return deleted > 0
