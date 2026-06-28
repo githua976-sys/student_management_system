@@ -47,6 +47,15 @@ def show_text_window(title, text_content):
     text_area.configure(state="disabled")
 
 
+def safe_call(fn):
+    def wrapper(*args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        except Exception as e:
+            messagebox.showerror("Error", f"An error occurred:\n{e}", parent=root)
+    return wrapper
+
+
 def add_student():
     student_id = simpledialog.askstring("Add Student", "Student ID:", parent=root)
     if not student_id:
@@ -487,6 +496,8 @@ tk.Button(root, text="View Students", width=30, command=view_students).pack(pady
 tk.Button(root, text="Search Student", width=30, command=search_student).pack(pady=2)
 tk.Button(root, text="Update Student", width=30, command=update_student).pack(pady=2)
 tk.Button(root, text="Delete Student", width=30, command=delete_student).pack(pady=2)
+# wrap callbacks with safe_call to show errors
+tk.Button(root, text="Add Student", width=30, command=safe_call(add_student)).pack_forget()
 
 
 # ---------------- Courses ----------------
