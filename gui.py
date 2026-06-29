@@ -4,6 +4,7 @@ from tkinter import messagebox, scrolledtext, simpledialog
 from database import create_database
 
 DB_FILE = "students.db"
+current_user = None
 
 
 def execute_query(query, params=()):
@@ -76,6 +77,83 @@ def safe_call(fn):
         except Exception as e:
             messagebox.showerror("Error", f"An error occurred:\n{e}", parent=root)
     return wrapper
+
+
+def verify_login(username, password):
+    """Verify user credentials against the database"""
+    try:
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+        cursor.execute("SELECT user_id, username, role FROM users WHERE username = ? AND password = ?", (username, password))
+        user = cursor.fetchone()
+        conn.close()
+        return user
+    except Exception as e:
+        print(f"Login error: {e}")
+        return None
+
+
+def show_login_window():
+    """Display login dialog and return True if login successful"""
+    global current_user, root
+    
+    login_window = tk.Tk()
+    login_window.title("Login - Student Management System")
+    login_window.geometry("400x200")
+    login_window.resizable(False, False)
+    login_window.attributes("-topmost", True)
+    
+    # Center on screen
+    login_window.update_idletasks()
+    width = login_window.winfo_width()
+    height = login_window.winfo_height()
+    x = (login_window.winfo_screenwidth() // 2) - (width // 2)
+    y = (login_window.winfo_screenheight() // 2) - (height // 2)
+    login_window.geometry(f"+{x}+{y}")
+    
+    tk.Label(login_window, text="Student Management System", font=("Arial", 16, "bold")).pack(pady=10)
+    tk.Label(login_window, text="Login Required", font=("Arial", 12)).pack()
+    
+    tk.Label(login_window, text="Username:").pack(anchor="w", padx=20, pady=(10, 0))
+    username_entry = tk.Entry(login_window, width=30)
+    username_entry.pack(padx=20, pady=5)
+    username_entry.focus()
+    
+    tk.Label(login_window, text="Password:").pack(anchor="w", padx=20)
+    password_entry = tk.Entry(login_window, width=30, show="*")
+    password_entry.pack(padx=20, pady=5)
+    
+    def login_attempt():
+        username = username_entry.get().strip()
+        password = password_entry.get().strip()
+        
+        if not username or not password:
+            messagebox.showerror("Error", "Please enter both username and password.", parent=login_window)
+            return
+        
+        user = verify_login(username, password)
+        if user:
+            current_user = user
+            login_window.destroy()
+            return True
+        else:
+            messagebox.showerror("Login Failed", "Invalid username or password.", parent=login_window)
+    
+    def on_closing():
+        login_window.destroy()
+        import sys
+        sys.exit()
+    
+    button_frame = tk.Frame(login_window)
+    button_frame.pack(pady=15)
+    
+    tk.Button(button_frame, text="Login", width=10, command=login_attempt).pack(side="left", padx=5)
+    tk.Button(button_frame, text="Exit", width=10, command=on_closing).pack(side="left", padx=5)
+    
+    tk.Label(login_window, text="Demo: admin/admin123 or user/user123", font=("Arial", 8, "italic"), fg="gray").pack(side="bottom", pady=5)
+    
+    login_window.protocol("WM_DELETE_WINDOW", on_closing)
+    login_window.mainloop()
 
 
 def add_student():
@@ -494,12 +572,18 @@ def generate_reports():
 
 create_database()
 
+# Show login window first
+show_login_window()
 
 root = tk.Tk()
 root.title("Student Management System")
 root.geometry("700x650")
 root.resizable(False, False)
 
+# Add logged-in user info at the top
+info_frame = tk.Frame(root)
+info_frame.pack(fill="x", padx=10, pady=5)
+tk.Label(info_frame, text=f"Logged in as: {current_user[1]} ({current_user[2]})", font=("Arial", 10, "italic")).pack(anchor="e")
 
 title = tk.Label(
     root,
