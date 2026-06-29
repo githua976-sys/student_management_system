@@ -79,6 +79,38 @@ def safe_call(fn):
     return wrapper
 
 
+def has_permission(action):
+    """Check if current user has permission for the action"""
+    if not current_user:
+        return False
+    
+    role = current_user[2]  # role is at index 2 in user tuple
+    
+    admin_actions = {
+        "add_student", "update_student", "delete_student",
+        "add_course", "update_course", "delete_course",
+        "assign_enrollment", "remove_enrollment",
+        "record_attendance", "update_attendance", "delete_attendance"
+    }
+    
+    user_actions = {
+        "view_students", "search_student",
+        "view_courses", "search_course",
+        "view_enrollments", "view_students_by_course", "view_courses_by_student",
+        "view_attendance", "search_attendance",
+        "generate_reports"
+    }
+    
+    if role == "admin":
+        # Admins can do everything
+        return True
+    elif role == "user":
+        # Users can only do specific actions
+        return action in user_actions
+    
+    return False
+
+
 def verify_login(username, password):
     """Verify user credentials against the database"""
     try:
