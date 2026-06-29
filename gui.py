@@ -4,7 +4,6 @@ from tkinter import messagebox, scrolledtext, simpledialog
 from database import create_database
 
 DB_FILE = "students.db"
-current_user = None
 
 
 def execute_query(query, params=()):
@@ -79,120 +78,7 @@ def safe_call(fn):
     return wrapper
 
 
-def has_permission(action):
-    """Check if current user has permission for the action"""
-    if not current_user:
-        return False
-    
-    role = current_user[2]  # role is at index 2 in user tuple
-    
-    admin_actions = {
-        "add_student", "update_student", "delete_student",
-        "add_course", "update_course", "delete_course",
-        "assign_enrollment", "remove_enrollment",
-        "record_attendance", "update_attendance", "delete_attendance"
-    }
-    
-    user_actions = {
-        "view_students", "search_student",
-        "view_courses", "search_course",
-        "view_enrollments", "view_students_by_course", "view_courses_by_student",
-        "view_attendance", "search_attendance",
-        "generate_reports"
-    }
-    
-    if role == "admin":
-        # Admins can do everything
-        return True
-    elif role == "user":
-        # Users can only do specific actions
-        return action in user_actions
-    
-    return False
-
-
-def verify_login(username, password):
-    """Verify user credentials against the database"""
-    try:
-        conn = sqlite3.connect(DB_FILE)
-        cursor = conn.cursor()
-        cursor.execute("SELECT user_id, username, role FROM users WHERE username = ? AND password = ?", (username, password))
-        user = cursor.fetchone()
-        conn.close()
-        return user
-    except Exception as e:
-        print(f"Login error: {e}")
-        return None
-
-
-def show_login_window():
-    """Display login dialog and return True if login successful"""
-    global current_user, root
-    
-    login_window = tk.Tk()
-    login_window.title("Login - Student Management System")
-    login_window.geometry("400x200")
-    login_window.resizable(False, False)
-    login_window.attributes("-topmost", True)
-    
-    # Center on screen
-    login_window.update_idletasks()
-    width = login_window.winfo_width()
-    height = login_window.winfo_height()
-    x = (login_window.winfo_screenwidth() // 2) - (width // 2)
-    y = (login_window.winfo_screenheight() // 2) - (height // 2)
-    login_window.geometry(f"+{x}+{y}")
-    
-    tk.Label(login_window, text="Student Management System", font=("Arial", 16, "bold")).pack(pady=10)
-    tk.Label(login_window, text="Login Required", font=("Arial", 12)).pack()
-    
-    tk.Label(login_window, text="Username:").pack(anchor="w", padx=20, pady=(10, 0))
-    username_entry = tk.Entry(login_window, width=30)
-    username_entry.pack(padx=20, pady=5)
-    username_entry.focus()
-    
-    tk.Label(login_window, text="Password:").pack(anchor="w", padx=20)
-    password_entry = tk.Entry(login_window, width=30, show="*")
-    password_entry.pack(padx=20, pady=5)
-    
-    def login_attempt():
-        username = username_entry.get().strip()
-        password = password_entry.get().strip()
-        
-        if not username or not password:
-            messagebox.showerror("Error", "Please enter both username and password.", parent=login_window)
-            return
-        
-        user = verify_login(username, password)
-        if user:
-            current_user = user
-            login_window.destroy()
-            return True
-        else:
-            messagebox.showerror("Login Failed", "Invalid username or password.", parent=login_window)
-    
-    def on_closing():
-        login_window.destroy()
-        import sys
-        sys.exit()
-    
-    button_frame = tk.Frame(login_window)
-    button_frame.pack(pady=15)
-    
-    tk.Button(button_frame, text="Login", width=10, command=login_attempt).pack(side="left", padx=5)
-    tk.Button(button_frame, text="Exit", width=10, command=on_closing).pack(side="left", padx=5)
-    
-    tk.Label(login_window, text="Demo: admin/admin123 or user/user123", font=("Arial", 8, "italic"), fg="gray").pack(side="bottom", pady=5)
-    
-    login_window.protocol("WM_DELETE_WINDOW", on_closing)
-    login_window.mainloop()
-
-
 def add_student():
-    if not has_permission("add_student"):
-        messagebox.showerror("Access Denied", "Only admins can add students.", parent=root)
-        return
-    
     student_id = simpledialog.askstring("Add Student", "Student ID:", parent=root)
     if not student_id:
         return
@@ -250,10 +136,6 @@ def search_student():
 
 
 def update_student():
-    if not has_permission("update_student"):
-        messagebox.showerror("Access Denied", "Only admins can update students.", parent=root)
-        return
-    
     student_id = simpledialog.askstring("Update Student", "Student ID:", parent=root)
     if not student_id:
         return
@@ -283,19 +165,11 @@ def update_student():
         "UPDATE students SET name = ?, age = ?, email = ?, phone = ? WHERE student_id = ?",
         (name, age, email, phone, student_id)
     )
-    if not has_permission("delete_student"):
-        messagebox.showerror("Access Denied", "Only admins can delete students.", parent=root)
-        return
-    
     messagebox.showinfo("Success", "Student updated successfully.", parent=root)
 
 
 def delete_student():
     student_id = simpledialog.askstring("Delete Student", "Student ID:", parent=root)
-    if not has_permission("add_course"):
-        messagebox.showerror("Access Denied", "Only admins can add courses.", parent=root)
-        return
-    
     if not student_id:
         return
 
@@ -338,10 +212,6 @@ def view_courses():
 
 
 def search_course():
-    if not has_permission("update_course"):
-        messagebox.showerror("Access Denied", "Only admins can update courses.", parent=root)
-        return
-    
     course_id = simpledialog.askinteger("Search Course", "Course ID:", parent=root)
     if course_id is None:
         return
@@ -367,19 +237,11 @@ def update_course():
     if not course_name:
         return
 
-    if not has_permission("delete_course"):
-        messagebox.showerror("Access Denied", "Only admins can delete courses.", parent=root)
-        return
-    
     description = simpledialog.askstring("Update Course", "Description:", initialvalue=row[1], parent=root)
     if description is None:
         description = ""
 
     duration = simpledialog.askstring("Update Course", "Duration:", initialvalue=row[2], parent=root)
-    if not has_permission("assign_enrollment"):
-        messagebox.showerror("Access Denied", "Only admins can manage enrollments.", parent=root)
-        return
-    
     if duration is None:
         duration = ""
 
@@ -469,19 +331,11 @@ def view_courses_by_student():
         return
 
     rows = fetch_all(
-    if not has_permission("remove_enrollment"):
-        messagebox.showerror("Access Denied", "Only admins can remove enrollments.", parent=root)
-        return
-    
         "SELECT students.name, courses.course_name "
         "FROM enrollments "
         "JOIN students ON enrollments.student_id = students.student_id "
         "JOIN courses ON enrollments.course_id = courses.course_id "
         "WHERE students.student_id = ?",
-    if not has_permission("record_attendance"):
-        messagebox.showerror("Access Denied", "Only admins can record attendance.", parent=root)
-        return
-    
         (student_id,)
     )
     if not rows:
@@ -550,11 +404,7 @@ def view_attendance():
         text += f"{row[0]}\t{row[1]}\t{row[2]}\t{row[3]}\t{row[4]}\t{row[5]}\n"
 
     show_text_window("View Attendance", text)
-if not has_permission("update_attendance"):
-        messagebox.showerror("Access Denied", "Only admins can update attendance.", parent=root)
-        return
-    
-    
+
 
 def search_attendance():
     student_id = simpledialog.askstring("Search Attendance", "Student ID:", parent=root)
@@ -571,10 +421,6 @@ def search_attendance():
     )
     if not rows:
         show_text_window("Search Attendance", "No attendance records found for that student.")
-    if not has_permission("delete_attendance"):
-        messagebox.showerror("Access Denied", "Only admins can delete attendance.", parent=root)
-        return
-    
         return
 
     text = "Attend ID\tName\tCourse\tDate\tStatus\n"
@@ -648,18 +494,12 @@ def generate_reports():
 
 create_database()
 
-# Show login window first
-show_login_window()
 
 root = tk.Tk()
 root.title("Student Management System")
 root.geometry("700x650")
 root.resizable(False, False)
 
-# Add logged-in user info at the top
-info_frame = tk.Frame(root)
-info_frame.pack(fill="x", padx=10, pady=5)
-tk.Label(info_frame, text=f"Logged in as: {current_user[1]} ({current_user[2]})", font=("Arial", 10, "italic")).pack(anchor="e")
 
 title = tk.Label(
     root,
@@ -674,12 +514,11 @@ title.pack(pady=20)
 tk.Label(root, text="Student Management", font=("Arial", 14, "bold")).pack()
 
 # student buttons
+tk.Button(root, text="Add Student", width=30, command=safe_call(add_student)).pack(pady=2)
 tk.Button(root, text="View Students", width=30, command=safe_call(view_students)).pack(pady=2)
 tk.Button(root, text="Search Student", width=30, command=safe_call(search_student)).pack(pady=2)
-if current_user[2] == "admin":
-    tk.Button(root, text="Add Student", width=30, command=safe_call(add_student)).pack(pady=2)
-    tk.Button(root, text="Update Student", width=30, command=safe_call(update_student)).pack(pady=2)
-    tk.Button(root, text="Delete Student", width=30, command=safe_call(delete_student)).pack(pady=2)
+tk.Button(root, text="Update Student", width=30, command=safe_call(update_student)).pack(pady=2)
+tk.Button(root, text="Delete Student", width=30, command=safe_call(delete_student)).pack(pady=2)
 # wrap callbacks with safe_call to show errors
 # temporary duplicate removed
 
@@ -689,45 +528,40 @@ if current_user[2] == "admin":
 tk.Label(root, text="Course Management", font=("Arial", 14, "bold")).pack(pady=10)
 
 # course buttons
+tk.Button(root, text="Add Course", width=30, command=safe_call(add_course)).pack(pady=2)
 tk.Button(root, text="View Courses", width=30, command=safe_call(view_courses)).pack(pady=2)
 tk.Button(root, text="Search Course", width=30, command=safe_call(search_course)).pack(pady=2)
-if current_user[2] == "admin":
-    tk.Button(root, text="Add Course", width=30, command=safe_call(add_course)).pack(pady=2)
-    tk.Button(root, text="Update Course", width=30, command=safe_call(update_course)).pack(pady=2)
-    tk.Button(root, text="Delete Course", width=30, command=safe_call(delete_course)).pack(pady=2)
+tk.Button(root, text="Update Course", width=30, command=safe_call(update_course)).pack(pady=2)
+tk.Button(root, text="Delete Course", width=30, command=safe_call(delete_course)).pack(pady=2)
 
 
 # ---------------- Enrollment ----------------
 
 tk.Label(root, text="Enrollment", font=("Arial", 14, "bold")).pack(pady=10)
 
-# enrollment buttons
-tk.Button(root, text="View Enrollments", width=30, command=safe_call(view_enrollments)).pack(pady=2)
-tk.Button(root, text="View Students by Course", width=30, command=safe_call(view_students_by_course)).pack(pady=2)
-tk.Button(root, text="View Courses by Student", width=30, command=safe_call(view_courses_by_student)).pack(pady=2)
-if current_user[2] == "admin":
-    tk.Button(root, text="Assign Student to Course", width=30, command=safe_call(assign_student_to_course)).pack(pady=2)
-    tk.Button(root, text="Remove Enrollment", width=30, command=safe_call(remove_enrollment)).pack(pady=2)
+tk.Button(root, text="Assign Student to Course", width=30, command=assign_student_to_course).pack(pady=2)
+tk.Button(root, text="View Enrollments", width=30, command=view_enrollments).pack(pady=2)
+tk.Button(root, text="View Students by Course", width=30, command=view_students_by_course).pack(pady=2)
+tk.Button(root, text="View Courses by Student", width=30, command=view_courses_by_student).pack(pady=2)
+tk.Button(root, text="Remove Enrollment", width=30, command=remove_enrollment).pack(pady=2)
 
 
 # ---------------- Attendance ----------------
 
 tk.Label(root, text="Attendance", font=("Arial", 14, "bold")).pack(pady=10)
 
-# attendance buttons
-tk.Button(root, text="View Attendance", width=30, command=safe_call(view_attendance)).pack(pady=2)
-tk.Button(root, text="Search Attendance", width=30, command=safe_call(search_attendance)).pack(pady=2)
-if current_user[2] == "admin":
-    tk.Button(root, text="Record Attendance", width=30, command=safe_call(record_attendance)).pack(pady=2)
-    tk.Button(root, text="Update Attendance", width=30, command=safe_call(update_attendance)).pack(pady=2)
-    tk.Button(root, text="Delete Attendance", width=30, command=safe_call(delete_attendance)).pack(pady=2)
+tk.Button(root, text="Record Attendance", width=30, command=record_attendance).pack(pady=2)
+tk.Button(root, text="View Attendance", width=30, command=view_attendance).pack(pady=2)
+tk.Button(root, text="Search Attendance", width=30, command=search_attendance).pack(pady=2)
+tk.Button(root, text="Update Attendance", width=30, command=update_attendance).pack(pady=2)
+tk.Button(root, text="Delete Attendance", width=30, command=delete_attendance).pack(pady=2)
 
 
 # ---------------- Reports ----------------
 
 tk.Label(root, text="Reports", font=("Arial", 14, "bold")).pack(pady=10)
 
-tk.Button(root, text="Generate Reports", width=30, command=safe_call(generate_reports)).pack(pady=2)
+tk.Button(root, text="Generate Reports", width=30, command=generate_reports).pack(pady=2)
 
 
 tk.Button(
