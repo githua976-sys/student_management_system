@@ -189,6 +189,10 @@ def show_login_window():
 
 
 def add_student():
+    if not has_permission("add_student"):
+        messagebox.showerror("Access Denied", "Only admins can add students.", parent=root)
+        return
+    
     student_id = simpledialog.askstring("Add Student", "Student ID:", parent=root)
     if not student_id:
         return
@@ -246,6 +250,10 @@ def search_student():
 
 
 def update_student():
+    if not has_permission("update_student"):
+        messagebox.showerror("Access Denied", "Only admins can update students.", parent=root)
+        return
+    
     student_id = simpledialog.askstring("Update Student", "Student ID:", parent=root)
     if not student_id:
         return
@@ -275,11 +283,19 @@ def update_student():
         "UPDATE students SET name = ?, age = ?, email = ?, phone = ? WHERE student_id = ?",
         (name, age, email, phone, student_id)
     )
+    if not has_permission("delete_student"):
+        messagebox.showerror("Access Denied", "Only admins can delete students.", parent=root)
+        return
+    
     messagebox.showinfo("Success", "Student updated successfully.", parent=root)
 
 
 def delete_student():
     student_id = simpledialog.askstring("Delete Student", "Student ID:", parent=root)
+    if not has_permission("add_course"):
+        messagebox.showerror("Access Denied", "Only admins can add courses.", parent=root)
+        return
+    
     if not student_id:
         return
 
@@ -322,6 +338,10 @@ def view_courses():
 
 
 def search_course():
+    if not has_permission("update_course"):
+        messagebox.showerror("Access Denied", "Only admins can update courses.", parent=root)
+        return
+    
     course_id = simpledialog.askinteger("Search Course", "Course ID:", parent=root)
     if course_id is None:
         return
@@ -347,11 +367,19 @@ def update_course():
     if not course_name:
         return
 
+    if not has_permission("delete_course"):
+        messagebox.showerror("Access Denied", "Only admins can delete courses.", parent=root)
+        return
+    
     description = simpledialog.askstring("Update Course", "Description:", initialvalue=row[1], parent=root)
     if description is None:
         description = ""
 
     duration = simpledialog.askstring("Update Course", "Duration:", initialvalue=row[2], parent=root)
+    if not has_permission("assign_enrollment"):
+        messagebox.showerror("Access Denied", "Only admins can manage enrollments.", parent=root)
+        return
+    
     if duration is None:
         duration = ""
 
@@ -441,11 +469,19 @@ def view_courses_by_student():
         return
 
     rows = fetch_all(
+    if not has_permission("remove_enrollment"):
+        messagebox.showerror("Access Denied", "Only admins can remove enrollments.", parent=root)
+        return
+    
         "SELECT students.name, courses.course_name "
         "FROM enrollments "
         "JOIN students ON enrollments.student_id = students.student_id "
         "JOIN courses ON enrollments.course_id = courses.course_id "
         "WHERE students.student_id = ?",
+    if not has_permission("record_attendance"):
+        messagebox.showerror("Access Denied", "Only admins can record attendance.", parent=root)
+        return
+    
         (student_id,)
     )
     if not rows:
@@ -514,7 +550,11 @@ def view_attendance():
         text += f"{row[0]}\t{row[1]}\t{row[2]}\t{row[3]}\t{row[4]}\t{row[5]}\n"
 
     show_text_window("View Attendance", text)
-
+if not has_permission("update_attendance"):
+        messagebox.showerror("Access Denied", "Only admins can update attendance.", parent=root)
+        return
+    
+    
 
 def search_attendance():
     student_id = simpledialog.askstring("Search Attendance", "Student ID:", parent=root)
@@ -531,6 +571,10 @@ def search_attendance():
     )
     if not rows:
         show_text_window("Search Attendance", "No attendance records found for that student.")
+    if not has_permission("delete_attendance"):
+        messagebox.showerror("Access Denied", "Only admins can delete attendance.", parent=root)
+        return
+    
         return
 
     text = "Attend ID\tName\tCourse\tDate\tStatus\n"
@@ -630,11 +674,12 @@ title.pack(pady=20)
 tk.Label(root, text="Student Management", font=("Arial", 14, "bold")).pack()
 
 # student buttons
-tk.Button(root, text="Add Student", width=30, command=safe_call(add_student)).pack(pady=2)
 tk.Button(root, text="View Students", width=30, command=safe_call(view_students)).pack(pady=2)
 tk.Button(root, text="Search Student", width=30, command=safe_call(search_student)).pack(pady=2)
-tk.Button(root, text="Update Student", width=30, command=safe_call(update_student)).pack(pady=2)
-tk.Button(root, text="Delete Student", width=30, command=safe_call(delete_student)).pack(pady=2)
+if current_user[2] == "admin":
+    tk.Button(root, text="Add Student", width=30, command=safe_call(add_student)).pack(pady=2)
+    tk.Button(root, text="Update Student", width=30, command=safe_call(update_student)).pack(pady=2)
+    tk.Button(root, text="Delete Student", width=30, command=safe_call(delete_student)).pack(pady=2)
 # wrap callbacks with safe_call to show errors
 # temporary duplicate removed
 
@@ -644,33 +689,36 @@ tk.Button(root, text="Delete Student", width=30, command=safe_call(delete_studen
 tk.Label(root, text="Course Management", font=("Arial", 14, "bold")).pack(pady=10)
 
 # course buttons
-tk.Button(root, text="Add Course", width=30, command=safe_call(add_course)).pack(pady=2)
 tk.Button(root, text="View Courses", width=30, command=safe_call(view_courses)).pack(pady=2)
 tk.Button(root, text="Search Course", width=30, command=safe_call(search_course)).pack(pady=2)
-tk.Button(root, text="Update Course", width=30, command=safe_call(update_course)).pack(pady=2)
-tk.Button(root, text="Delete Course", width=30, command=safe_call(delete_course)).pack(pady=2)
+if current_user[2] == "admin":
+    tk.Button(root, text="Add Course", width=30, command=safe_call(add_course)).pack(pady=2)
+    tk.Button(root, text="Update Course", width=30, command=safe_call(update_course)).pack(pady=2)
+    tk.Button(root, text="Delete Course", width=30, command=safe_call(delete_course)).pack(pady=2)
 
 
 # ---------------- Enrollment ----------------
 
 tk.Label(root, text="Enrollment", font=("Arial", 14, "bold")).pack(pady=10)
 
-# enrollment buttons
-tk.Button(root, text="Assign Student to Course", width=30, command=safe_call(assign_student_to_course)).pack(pady=2)
-tk.Button(root, text="View Enrollments", width=30, command=safe_call(view_enrollments)).pack(pady=2)
+# enrollment buttonsView Enrollments", width=30, command=safe_call(view_enrollments)).pack(pady=2)
 tk.Button(root, text="View Students by Course", width=30, command=safe_call(view_students_by_course)).pack(pady=2)
 tk.Button(root, text="View Courses by Student", width=30, command=safe_call(view_courses_by_student)).pack(pady=2)
+if current_user[2] == "admin":
+    tk.Button(root, text="Assign Student to Course", width=30, command=safe_call(assign_student_to_course)).pack(pady=2)
+    tk.Button(root, text="View Courses by Student", width=30, command=safe_call(view_courses_by_student)).pack(pady=2)
 tk.Button(root, text="Remove Enrollment", width=30, command=safe_call(remove_enrollment)).pack(pady=2)
 
 
 # ---------------- Attendance ----------------
 
 tk.Label(root, text="Attendance", font=("Arial", 14, "bold")).pack(pady=10)
-
-# attendance buttons
-tk.Button(root, text="Record Attendance", width=30, command=safe_call(record_attendance)).pack(pady=2)
-tk.Button(root, text="View Attendance", width=30, command=safe_call(view_attendance)).pack(pady=2)
+View Attendance", width=30, command=safe_call(view_attendance)).pack(pady=2)
 tk.Button(root, text="Search Attendance", width=30, command=safe_call(search_attendance)).pack(pady=2)
+if current_user[2] == "admin":
+    tk.Button(root, text="Record Attendance", width=30, command=safe_call(record_attendance)).pack(pady=2)
+    tk.Button(root, text="Update Attendance", width=30, command=safe_call(update_attendance)).pack(pady=2)
+    tk.Button(root, text="Search Attendance", width=30, command=safe_call(search_attendance)).pack(pady=2)
 tk.Button(root, text="Update Attendance", width=30, command=safe_call(update_attendance)).pack(pady=2)
 tk.Button(root, text="Delete Attendance", width=30, command=safe_call(delete_attendance)).pack(pady=2)
 
